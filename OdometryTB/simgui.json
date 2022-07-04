@@ -12,6 +12,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/RomiDrivetrain": "Subsystem",
+      "/LiveWindow/RomiOdometer": "Subsystem",
       "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler"
     }

@@ -2,9 +2,10 @@ package frc.robot.sensors;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.*;
-public class RomiOdometer {
+public class RomiOdometer extends SubsystemBase{
     private RomiGyro gyro;
     private DifferentialDriveOdometry od;
     private Encoder leftEncoder=new Encoder(4,5);

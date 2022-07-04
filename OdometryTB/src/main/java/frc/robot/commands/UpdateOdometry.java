@@ -7,6 +7,7 @@ public class UpdateOdometry extends CommandBase{
     RomiOdometer od;
     public UpdateOdometry(RomiOdometer od){
         this.od=od;
+        addRequirements(od);
     }
     @Override
     public void initialize() {
@@ -17,8 +18,6 @@ public class UpdateOdometry extends CommandBase{
     }
     @Override
     public void end(boolean interrupted) {}
-  
-    // Returns true when the command should end.
     @Override
     public boolean isFinished() {
       return false;

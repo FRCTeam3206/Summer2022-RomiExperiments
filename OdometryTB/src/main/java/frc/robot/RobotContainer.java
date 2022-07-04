@@ -12,6 +12,9 @@ import frc.robot.sensors.RomiGyro;
 import frc.robot.sensors.RomiOdometer;
 import frc.robot.subsystems.RomiDrivetrain;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -23,9 +26,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final RomiDrivetrain romiDrivetrain = new RomiDrivetrain();
   private final GenericHID controller=new XboxController(0);
-  public RomiGyro gyro=new RomiGyro();
-  public RomiOdometer od=new RomiOdometer(gyro);
-  public final UpdateOdometry upOd=new UpdateOdometry(od);
+  private RomiGyro gyro=new RomiGyro();
+  private RomiOdometer od=new RomiOdometer(gyro);
+  private final UpdateOdometry upOd=new UpdateOdometry(od);
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
@@ -39,8 +42,18 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    upOd.schedule();
     romiDrivetrain.setDefaultCommand(getArcadeDriveCommand());
+    od.setDefaultCommand(upOd);
+    JoystickButton aButton=new JoystickButton(controller, 1);
+    aButton.whenPressed(new InstantCommand(new Runnable() {
+
+      @Override
+      public void run() {
+        System.out.println(od.getX());
+        
+      }
+      
+    }));
   }
 
   /**
