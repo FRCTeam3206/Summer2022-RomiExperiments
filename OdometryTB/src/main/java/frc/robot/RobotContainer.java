@@ -7,6 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
+import frc.robot.commands.UpdateOdometry;
+import frc.robot.sensors.RomiGyro;
+import frc.robot.sensors.RomiOdometer;
 import frc.robot.subsystems.RomiDrivetrain;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -20,6 +23,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final RomiDrivetrain romiDrivetrain = new RomiDrivetrain();
   private final GenericHID controller=new XboxController(0);
+  public RomiGyro gyro=new RomiGyro();
+  public RomiOdometer od=new RomiOdometer(gyro);
+  public final UpdateOdometry upOd=new UpdateOdometry(od);
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
@@ -33,7 +39,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    
+    upOd.schedule();
     romiDrivetrain.setDefaultCommand(getArcadeDriveCommand());
   }
 
