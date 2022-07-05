@@ -4,9 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
+import frc.robot.commands.RamseteCommand;
 import frc.robot.commands.UpdateOdometry;
 import frc.robot.sensors.RomiGyro;
 import frc.robot.sensors.RomiOdometer;
@@ -28,7 +31,7 @@ public class RobotContainer {
   private final GenericHID controller=new XboxController(0);
   private RomiGyro gyro=new RomiGyro();
   private RomiOdometer od=new RomiOdometer(gyro);
-  private final UpdateOdometry upOd=new UpdateOdometry(od);
+  private UpdateOdometry upOd=new UpdateOdometry(od);
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
@@ -54,6 +57,8 @@ public class RobotContainer {
       }
       
     }));
+    JoystickButton startButton=new JoystickButton(controller, 2);
+    startButton.whenPressed(new RamseteCommand(romiDrivetrain, od, new Pose2d(0,0,new Rotation2d())));
   }
 
   /**

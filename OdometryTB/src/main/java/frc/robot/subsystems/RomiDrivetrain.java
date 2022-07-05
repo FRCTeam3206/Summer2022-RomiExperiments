@@ -27,7 +27,9 @@ public class RomiDrivetrain extends SubsystemBase {
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
     diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate);
   }
-
+  public void tankDrive(double left,double right){
+    diffDrive.tankDrive(left, right);
+  }
   @Override
   public void periodic() {
     // This method will be called once per scheduler run

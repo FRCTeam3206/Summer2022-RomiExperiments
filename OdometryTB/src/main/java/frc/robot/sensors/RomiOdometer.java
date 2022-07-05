@@ -1,4 +1,5 @@
 package frc.robot.sensors;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -27,5 +28,8 @@ public class RomiOdometer extends SubsystemBase{
     }
     public double getY(){
         return od.getPoseMeters().getY();
+    }
+    public Pose2d getPose(){
+        return new Pose2d(od.getPoseMeters().getTranslation(),gyro.getHeading());
     }
 }
