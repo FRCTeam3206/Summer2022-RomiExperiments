@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
+import frc.robot.commands.PathFollower;
 import frc.robot.commands.RamseteCommand;
 import frc.robot.commands.UpdateOdometry;
 import frc.robot.sensors.RomiGyro;
@@ -32,6 +33,7 @@ public class RobotContainer {
   private RomiGyro gyro=new RomiGyro();
   private RomiOdometer od=new RomiOdometer(gyro);
   private UpdateOdometry upOd=new UpdateOdometry(od);
+  private PathFollower pathFollower=new PathFollower(romiDrivetrain, od, new Pose2d(0,0,new Rotation2d()));
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
@@ -58,7 +60,15 @@ public class RobotContainer {
       
     }));
     JoystickButton startButton=new JoystickButton(controller, 2);
-    startButton.whenPressed(new RamseteCommand(romiDrivetrain, od, new Pose2d(0,0,new Rotation2d())));
+    startButton.whenPressed(pathFollower).whenReleased(new InstantCommand(new Runnable() {
+
+      @Override
+      public void run() {
+        //pathFollower.cancel();
+        
+      }
+      
+    }));
   }
 
   /**
