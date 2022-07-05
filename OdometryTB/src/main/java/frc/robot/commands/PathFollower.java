@@ -48,6 +48,6 @@ public class PathFollower extends CommandBase{
     public boolean isFinished(){
         Pose2d error=goal.relativeTo(od.getPose());
         double distance=Math.sqrt(Math.pow(error.getX(),2)+Math.pow(error.getY(),2));
-        return distance<2;
+        return distance<5;
     }
 }
