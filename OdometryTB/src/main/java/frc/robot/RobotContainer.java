@@ -4,9 +4,13 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
+import frc.robot.commands.PathFollower;
+import frc.robot.commands.RamseteCommand;
 import frc.robot.commands.UpdateOdometry;
 import frc.robot.sensors.RomiGyro;
 import frc.robot.sensors.RomiOdometer;
@@ -28,7 +32,8 @@ public class RobotContainer {
   private final GenericHID controller=new XboxController(0);
   private RomiGyro gyro=new RomiGyro();
   private RomiOdometer od=new RomiOdometer(gyro);
-  private final UpdateOdometry upOd=new UpdateOdometry(od);
+  private UpdateOdometry upOd=new UpdateOdometry(od);
+  private PathFollower pathFollower=new PathFollower(romiDrivetrain, od, new Pose2d(0,0,new Rotation2d()));
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
@@ -50,6 +55,16 @@ public class RobotContainer {
       @Override
       public void run() {
         System.out.println(od.getX());
+        
+      }
+      
+    }));
+    JoystickButton startButton=new JoystickButton(controller, 2);
+    startButton.whenPressed(pathFollower).whenReleased(new InstantCommand(new Runnable() {
+
+      @Override
+      public void run() {
+        //pathFollower.cancel();
         
       }
       
