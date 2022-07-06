@@ -13,5 +13,5 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final double DIST_PER_ENCODER_PULSE=Math.PI*3.5*3.5/1440;
+    public static final double DIST_PER_ENCODER_PULSE=Math.PI*7/1440;
 }
