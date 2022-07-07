@@ -62,9 +62,9 @@ public class RobotContainer {
     }));
     JoystickButton startButton=new JoystickButton(controller, 2);
     startButton.whenPressed(/**/PathFollower.followPath(drive, od, new Translation2d[]{
-      new Translation2d(15,35),
-      new Translation2d(30,-30),
-      new Translation2d(50,0),
+      new Translation2d(-35,-15),
+      new Translation2d(-100,-15),
+      new Translation2d(-150,0),
     })).whenReleased(new InstantCommand(new Runnable() {
 
       @Override
