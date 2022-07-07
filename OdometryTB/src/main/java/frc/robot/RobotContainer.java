@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
@@ -28,12 +29,12 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final RomiDrivetrain romiDrivetrain = new RomiDrivetrain();
+  private final RomiDrivetrain drive = new RomiDrivetrain();
   private final GenericHID controller=new XboxController(0);
   private RomiGyro gyro=new RomiGyro();
   private RomiOdometer od=new RomiOdometer(gyro);
   private UpdateOdometry upOd=new UpdateOdometry(od);
-  private PathFollower pathFollower=new PathFollower(romiDrivetrain, od, new Pose2d(0,0,new Rotation2d()));
+  private PathFollower pathFollower=new PathFollower(drive, od, new Pose2d(0,0,new Rotation2d()));
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the button bindings
@@ -47,7 +48,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    romiDrivetrain.setDefaultCommand(getArcadeDriveCommand());
+    drive.setDefaultCommand(getArcadeDriveCommand());
     od.setDefaultCommand(upOd);
     JoystickButton aButton=new JoystickButton(controller, 1);
     aButton.whenPressed(new InstantCommand(new Runnable() {
@@ -60,7 +61,11 @@ public class RobotContainer {
       
     }));
     JoystickButton startButton=new JoystickButton(controller, 2);
-    startButton.whenPressed(pathFollower).whenReleased(new InstantCommand(new Runnable() {
+    startButton.whenPressed(/**/PathFollower.followPath(drive, od, new Translation2d[]{
+      new Translation2d(-35,-15),
+      new Translation2d(-100,-15),
+      new Translation2d(-150,0),
+    })).whenReleased(new InstantCommand(new Runnable() {
 
       @Override
       public void run() {
@@ -78,6 +83,6 @@ public class RobotContainer {
    */
     public Command getArcadeDriveCommand(){
       
-      return new ArcadeDrive(romiDrivetrain,() -> controller.getRawAxis(1), () -> controller.getRawAxis(0));
+      return new ArcadeDrive(drive,() -> controller.getRawAxis(1), () -> controller.getRawAxis(0));
     }
 }
