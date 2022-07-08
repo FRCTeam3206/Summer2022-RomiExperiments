@@ -58,7 +58,7 @@ public class PathFollower extends CommandBase{
         SmartDashboard.putNumber("Angle",currAngle);
         SmartDashboard.putNumber("Angle Error", angleError);
         double angleSpeed=1-Math.pow((1-Math.abs(angleError/180)),4);
-        double forwardSpeed=Math.pow((1-Math.abs(angleError/180)),7);
+        double forwardSpeed=Math.pow((1-Math.abs(angleError/180)),6);
         double distance=Math.sqrt(Math.pow(error.getX(),2)+Math.pow(error.getY(),2));
         SmartDashboard.putNumber("Distance", distance);
         if(slowToTarget){
