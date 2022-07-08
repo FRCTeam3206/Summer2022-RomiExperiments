@@ -21,7 +21,11 @@ public class RomiOdometer extends SubsystemBase{
         od.update(gyro.getHeading(), leftEncoder.getDistance(), rightEncoder.getDistance());
         SmartDashboard.putNumber("X", od.getPoseMeters().getX());
         SmartDashboard.putNumber("Y", od.getPoseMeters().getY());
-        SmartDashboard.putNumber("T", gyro.getHeading().getDegrees());
+        double currAngle=(double)Math.floorMod((long)gyro.getAngleZ(),360l);
+        if(currAngle>180){
+            currAngle-=360;
+        }
+        //SmartDashboard.putNumber("CurrAngle", currAngle);
     }
     public double getX(){
         return od.getPoseMeters().getX();
