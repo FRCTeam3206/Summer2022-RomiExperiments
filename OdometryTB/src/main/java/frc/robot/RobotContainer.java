@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
+import frc.robot.commands.FODrive;
 import frc.robot.commands.PathFollower;
 import frc.robot.commands.RamseteCommand;
 import frc.robot.commands.UpdateOdometry;
@@ -48,7 +49,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    drive.setDefaultCommand(getArcadeDriveCommand());
+    drive.setDefaultCommand(getFOCommand());
     od.setDefaultCommand(upOd);
     JoystickButton aButton=new JoystickButton(controller, 1);
     aButton.whenPressed(new InstantCommand(new Runnable() {
@@ -84,5 +85,9 @@ public class RobotContainer {
     public Command getArcadeDriveCommand(){
       
       return new ArcadeDrive(drive,() -> controller.getRawAxis(1), () -> controller.getRawAxis(0));
+    }
+    public Command getFOCommand(){
+      
+      return new FODrive(drive,gyro,() -> controller.getRawAxis(0), () -> controller.getRawAxis(1));
     }
 }
