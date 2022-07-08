@@ -13,6 +13,7 @@ import frc.robot.commands.ArcadeDrive;
 import frc.robot.commands.FODrive;
 import frc.robot.commands.PathFollower;
 import frc.robot.commands.RamseteCommand;
+import frc.robot.commands.TurnCommand;
 import frc.robot.commands.UpdateOdometry;
 import frc.robot.sensors.RomiGyro;
 import frc.robot.sensors.RomiOdometer;
@@ -20,6 +21,7 @@ import frc.robot.subsystems.RomiDrivetrain;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
@@ -62,10 +64,8 @@ public class RobotContainer {
       
     }));
     JoystickButton startButton=new JoystickButton(controller, 2);
-    startButton.whenPressed(/**/PathFollower.followPath(drive, od, new Translation2d[]{
-      new Translation2d(-35,-15),
-      new Translation2d(-100,-15),
-      new Translation2d(-150,0),
+    startButton.whenPressed(PathFollower.followPath(drive, od, new Translation2d[]{
+      new Translation2d(0,0),
     })).whenReleased(new InstantCommand(new Runnable() {
 
       @Override
@@ -76,7 +76,16 @@ public class RobotContainer {
       
     }));
   }
-
+  public Command getAutoCommand(){
+    return new SequentialCommandGroup(
+        PathFollower.followPath(drive, od, new Translation2d[]{
+          new Translation2d(-40,-40),
+          new Translation2d(-100,-40),
+          new Translation2d(-100,0)
+        }),
+        new TurnCommand(drive, gyro, 0)
+    );
+  }
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *

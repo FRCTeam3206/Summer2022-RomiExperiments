@@ -115,6 +115,13 @@ public class RomiGyro {
 
     return 0.0;
   }
+  public double getProcessedAngle(){
+    double currAngle=(double)Math.floorMod((long)getAngleZ(),360l);
+        if(currAngle>180){
+            currAngle-=360;
+        }
+     return -currAngle;
+  }
   public Rotation2d getHeading(){
       return new Rotation2d(getAngleZ()/180*Math.PI);
   }
