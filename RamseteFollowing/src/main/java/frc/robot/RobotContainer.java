@@ -89,17 +89,17 @@ public class RobotContainer {
     // If you would like to specify coordinates in inches (which might be easier
     // to deal with for the Romi), you can use the Units.inchesToMeters() method
     List<Translation2d> trans=new ArrayList<Translation2d>();
-    trans.add(new Translation2d(.25,.25));
+    trans.add(new Translation2d(.01,.01));
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
-        new Pose2d(),
+        drive.getPose(),
         trans,
         new Pose2d(),
         config);
     Supplier<DifferentialDriveWheelSpeeds> wheelSpeeds=() -> drive.getWheelSpeeds();
     BiConsumer<Double,Double> bc=(left, right) -> drive.tankDriveVolts(left,right);
     RamseteController rc=new RamseteController(kRamseteB, kRamseteZeta);
-    rc.setTolerance(new Pose2d(.05,.05,new Rotation2d(Math.PI/8)));
+    rc.setTolerance(new Pose2d(.0,.0,new Rotation2d(Math.PI/32)));
     RamseteCommand ramseteCommand = new RamseteCommand(
         exampleTrajectory,
         drive::getPose,
@@ -111,16 +111,7 @@ public class RobotContainer {
         new PIDController(kPDriveVel, 0, 0),
         bc,
         drive);
-
-    //m_drivetrain.resetOdometry(exampleTrajectory.getInitialPose());
-    drive.resetOdometry(exampleTrajectory.getInitialPose());
-
-
-    // Set up a sequence of commands
-    // First, we want to reset the drivetrain odometry
-    return new InstantCommand(() -> drive.resetOdometry(exampleTrajectory.getInitialPose()), drive)
-        // next, we run the actual ramsete command
-        .andThen(ramseteCommand)
+    return ramseteCommand
 
         // Finally, we make sure that the robot stops
         .andThen(new InstantCommand(() -> drive.tankDriveVolts(0, 0), drive));
