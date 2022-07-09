@@ -18,8 +18,8 @@ public class PathFollower extends CommandBase{
     private RomiDrivetrain drive;
     private RomiOdometer od;
     private Pose2d goal;
-    private double slowToTarget;
-    public PathFollower(RomiDrivetrain drive,RomiOdometer od,Pose2d goal,double slowToTarget){
+    private boolean slowToTarget=true;
+    public PathFollower(RomiDrivetrain drive,RomiOdometer od,Pose2d goal,boolean slowToTarget){
         this.drive=drive;
         this.od=od;
         this.goal=goal;
@@ -31,7 +31,6 @@ public class PathFollower extends CommandBase{
         this.od=od;
         this.goal=goal;
         addRequirements(drive);
-        this.slowToTarget=1.5;
     }
     public void execute(){
         SmartDashboard.putString("Going to",""+goal.toString());
@@ -58,27 +57,29 @@ public class PathFollower extends CommandBase{
         }
         SmartDashboard.putNumber("Angle",currAngle);
         SmartDashboard.putNumber("Angle Error", angleError);
-        double angleSpeed=1-Math.pow((1-Math.abs(angleError/180)),5);
-        double forwardSpeed=1-angleSpeed;
+        double angleSpeed=1-Math.pow((1-Math.abs(angleError/180)),4);
+        double forwardSpeed=Math.pow((1-Math.abs(angleError/180)),6);
         double distance=Math.sqrt(Math.pow(error.getX(),2)+Math.pow(error.getY(),2));
         SmartDashboard.putNumber("Distance", distance);
-        forwardSpeed*=1-Math.pow(slowToTarget,-distance);
-        forwardSpeed*=.8;
+        if(slowToTarget){
+            forwardSpeed*=1-Math.pow(1.3,-distance);
+        }
+        //forwardSpeed*=.8;
         angleSpeed*=Math.signum(angleError);
         drive.arcadeDrive(-forwardSpeed, angleSpeed);
     }
     public boolean isFinished(){
         Pose2d error=goal.relativeTo(od.getPose());
         double distance=Math.sqrt(Math.pow(error.getX(),2)+Math.pow(error.getY(),2));
-        return distance<5;
+        return distance<3;
     }
     public static Command followPath(RomiDrivetrain drive,RomiOdometer od,Translation2d[] points){
         Command[] commands=new Command[points.length];
         int i=0;
         for(Translation2d trans:points){
-            double slow=Double.MAX_VALUE;
+            boolean slow=false;
             if(i+1==points.length){
-                slow=1.5;
+                slow=true;
             }
             commands[i]=new PathFollower(drive, od, new Pose2d(trans.getX(),trans.getY(),new Rotation2d()),slow);
             i++;

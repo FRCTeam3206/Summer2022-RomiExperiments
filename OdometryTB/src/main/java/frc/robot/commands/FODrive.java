@@ -41,19 +41,5 @@ public class FODrive extends CommandBase{
         double forwardPower=-Math.sqrt(Math.pow(forward.get(),2)+Math.pow(side.get(),2))*(1-turn);
         drive.arcadeDrive(forwardPower, turn*Math.sqrt(Math.pow(forward.get(),2)+Math.pow(side.get(),2)));
     }
-    public static double turnToAngle(double curr,double goal){
-        double angleError=goal-curr;
-        SmartDashboard.putNumber("Error", angleError);
-        if(angleError>180){
-            angleError-=360;
-        }
-        if(angleError<-180){
-            angleError+=360;
-        }
-        double mul=1;
-        if(angleError>0){
-            mul=-1;
-        }
-        return mul*(1-Math.pow((1-Math.abs(angleError/180)),5));
-    }
+    
 }

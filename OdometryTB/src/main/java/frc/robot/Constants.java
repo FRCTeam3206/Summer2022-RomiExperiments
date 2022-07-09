@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -14,5 +16,19 @@ package frc.robot;
  */
 public final class Constants {
     public static final double DIST_PER_ENCODER_PULSE=Math.PI*7/1440;
-    
+    public static double turnToAngle(double curr,double goal){
+        double angleError=goal-curr;
+        SmartDashboard.putNumber("Error", angleError);
+        if(angleError>180){
+            angleError-=360;
+        }
+        if(angleError<-180){
+            angleError+=360;
+        }
+        double mul=1;
+        if(angleError>0){
+            mul=-1;
+        }
+        return mul*(1-Math.pow((1-Math.abs(angleError/180)),5));
+    }
 }
