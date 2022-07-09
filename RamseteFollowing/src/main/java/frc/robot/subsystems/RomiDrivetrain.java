@@ -185,10 +185,6 @@ public class RomiDrivetrain extends SubsystemBase {
    * Resets the odometry to the specified pose
    * @param pose The pose to which to set the odometry
    */
-  public void resetOdometry(Pose2d pose) {
-    resetEncoders();
-    odometry.resetPosition(pose, gyro.getHeading());
-  }
 
   /**
    * Sets the max output of the drive. Useful for scaling the drive to drive more slowly
