@@ -17,6 +17,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.ArcadeDrive;
 import frc.robot.subsystems.RomiDrivetrain;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -57,7 +58,6 @@ public class RobotContainer {
   private void configureButtonBindings() {
     drive.setDefaultCommand(getArcadeDriveCommand(controller));
     JoystickButton startButton=new JoystickButton(controller, 2);
-    startButton.whenPressed(getRamseteCommand());
   }
 
   /**
@@ -67,7 +67,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return new WaitCommand(15);
+    return getRamseteCommand();
   }
   public Command getRamseteCommand(){
     var autoVoltageConstraint =
@@ -76,30 +76,30 @@ public class RobotContainer {
                                        kvVoltSecondsPerMeter, 
                                        kaVoltSecondsSquaredPerMeter),
             kDriveKinematics,
-            10);
+            6);
 
     TrajectoryConfig config =
         new TrajectoryConfig(kMaxSpeedMetersPerSecond, 
                              kMaxAccelerationMetersPerSecondSquared)
             .setKinematics(kDriveKinematics)
             .addConstraint(autoVoltageConstraint);
-
     // This trajectory can be modified to suit your purposes
     // Note that all coordinates are in meters, and follow NWU conventions.
     // If you would like to specify coordinates in inches (which might be easier
     // to deal with for the Romi), you can use the Units.inchesToMeters() method
     List<Translation2d> trans=new ArrayList<Translation2d>();
-    trans.add(new Translation2d(.01,.01));
+    trans.add(new Translation2d(-1,-1));
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
         drive.getPose(),
         trans,
         new Pose2d(),
         config);
+    double expectedTime=exampleTrajectory.getTotalTimeSeconds();
+    SmartDashboard.putNumber("ExpectedTime",expectedTime);
     Supplier<DifferentialDriveWheelSpeeds> wheelSpeeds=() -> drive.getWheelSpeeds();
     BiConsumer<Double,Double> bc=(left, right) -> drive.tankDriveVolts(left,right);
     RamseteController rc=new RamseteController(kRamseteB, kRamseteZeta);
-    rc.setTolerance(new Pose2d(.0,.0,new Rotation2d(Math.PI/32)));
     RamseteCommand ramseteCommand = new RamseteCommand(
         exampleTrajectory,
         drive::getPose,
