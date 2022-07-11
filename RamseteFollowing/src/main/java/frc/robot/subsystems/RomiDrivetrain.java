@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.BuiltInAccelerometer;
@@ -62,8 +63,8 @@ public class RomiDrivetrain extends SubsystemBase {
    * @param rightVolts the commanded right output
    */
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    leftMotor.setVoltage(leftVolts);
-    rightMotor.setVoltage(-rightVolts); // We invert this to maintain +ve = forward
+    leftMotor.setVoltage(-leftVolts);
+    rightMotor.setVoltage(rightVolts); // We invert this to maintain +ve = forward
     diffDrive.feed();
   }
 
@@ -155,8 +156,9 @@ public class RomiDrivetrain extends SubsystemBase {
   public void periodic() {
     // Update the odometry in the periodic block
     odometry.update(gyro.getHeading(), leftEncoder.getDistance(), rightEncoder.getDistance());
-    SmartDashboard.putNumber("X",odometry.getPoseMeters().getX());
-    SmartDashboard.putNumber("Y",odometry.getPoseMeters().getY());
+    SmartDashboard.putNumber("X",getPose().getX());
+    SmartDashboard.putNumber("Y",getPose().getY());
+    SmartDashboard.putNumber("T",getPose().getRotation().getDegrees());
     // Also update the Field2D object (so that we can visualize this in sim)
     field2d.setRobotPose(getPose());
   }
@@ -166,7 +168,8 @@ public class RomiDrivetrain extends SubsystemBase {
    * @return The pose
    */
   public Pose2d getPose() {
-    return odometry.getPoseMeters();
+    Pose2d pose= odometry.getPoseMeters();
+    return new Pose2d(-pose.getY(),-pose.getX(),new Rotation2d(Math.PI/2-pose.getRotation().getRadians()));
   }
 
   public Field2d getField(){
