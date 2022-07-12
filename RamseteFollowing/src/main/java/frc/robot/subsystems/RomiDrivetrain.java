@@ -211,4 +211,7 @@ public class RomiDrivetrain extends SubsystemBase {
   public double getHeading() {
     return gyro.getHeading().getDegrees();
   }
+  public void resetOdometry(Pose2d pose){
+    odometry.resetPosition(pose, pose.getRotation());
+  }
 }

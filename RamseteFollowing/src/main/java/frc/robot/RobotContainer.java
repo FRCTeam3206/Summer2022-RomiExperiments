@@ -15,8 +15,10 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,6 +31,8 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 import java.util.function.BiConsumer;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -69,7 +73,36 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return getRamseteCommand();
+    return getPathWeaverCommand();
+  }
+  public Command getPathWeaverCommand(){
+    String trajectoryJSON = "paths/simplepark.wpilib.json";
+    Trajectory trajectory = new Trajectory();
+    try {
+      Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
+      trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+   } catch (IOException ex) {
+      ex.printStackTrace();
+   }
+   drive.resetOdometry(trajectory.getInitialPose());
+   Supplier<DifferentialDriveWheelSpeeds> wheelSpeeds=() -> drive.getWheelSpeeds();
+    BiConsumer<Double,Double> bc=(left, right) -> drive.tankDriveVolts(left,right);
+    RamseteController rc=new RamseteController(kRamseteB, kRamseteZeta);
+    RamseteCommand ramseteCommand = new RamseteCommand(
+        trajectory,
+        drive::getPose,
+        rc,
+        new SimpleMotorFeedforward(ksVolts, kvVoltSecondsPerMeter, kaVoltSecondsSquaredPerMeter),
+        kDriveKinematics,
+        wheelSpeeds,
+        new PIDController(kPDriveVel, 0, 0),
+        new PIDController(kPDriveVel, 0, 0),
+        bc,
+        drive);
+    return ramseteCommand
+
+        // Finally, we make sure that the robot stops
+        .andThen(new InstantCommand(() -> drive.tankDriveVolts(0, 0), drive));
   }
   public Command getRamseteCommand(){
     var autoVoltageConstraint =
