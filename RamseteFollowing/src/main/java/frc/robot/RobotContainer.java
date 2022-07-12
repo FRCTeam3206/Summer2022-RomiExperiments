@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.ArcadeDrive;
+import frc.robot.commands.PathCommand;
 import frc.robot.subsystems.RomiDrivetrain;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -73,7 +74,14 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return getPathWeaverCommand();
+    return getPathCommand();
+  }
+  public Command getPathCommand(){
+    drive.resetOdometry(new Pose2d(.2,.2,new Rotation2d(Math.PI/2)));
+    ArrayList<Pose2d> pts=new ArrayList<>();
+    pts.add(new Pose2d(.7,.7,new Rotation2d(2.27)));
+    pts.add(new Pose2d(.2,1.3,new Rotation2d()));
+    return new PathCommand(drive,drive.getPose(),pts,new Pose2d(1.3,1.3,new Rotation2d()));
   }
   public Command getPathWeaverCommand(){
     String trajectoryJSON = "paths/simplepark.wpilib.json";
