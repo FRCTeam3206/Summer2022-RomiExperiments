@@ -63,8 +63,8 @@ public class RomiDrivetrain extends SubsystemBase {
    * @param rightVolts the commanded right output
    */
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    leftMotor.setVoltage(-leftVolts);
-    rightMotor.setVoltage(rightVolts); // We invert this to maintain +ve = forward
+    leftMotor.setVoltage(leftVolts);
+    rightMotor.setVoltage(-rightVolts); // We invert this to maintain +ve = forward
     diffDrive.feed();
   }
 
