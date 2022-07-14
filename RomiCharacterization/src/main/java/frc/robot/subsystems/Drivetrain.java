@@ -47,7 +47,10 @@ public class Drivetrain extends SubsystemBase {
     m_rightEncoder.setDistancePerPulse((Math.PI * kWheelDiameterInch) / kCountsPerRevolution);
     resetEncoders();
   }
-
+  public void drive(double volts){
+    m_leftMotor.setVoltage(volts);
+    m_rightMotor.setVoltage(volts);
+  }
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
     m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate);
   }
