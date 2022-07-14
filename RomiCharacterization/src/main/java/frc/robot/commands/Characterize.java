@@ -11,13 +11,13 @@ public class Characterize extends CommandBase{
         addRequirements(drive);
     }
     ArrayList<double[]> values=new ArrayList<double[]>();
-    private double percent;
+    private double volatage;
     @Override
     public void initialize(){
         //test(.4);
         //test(.5);
         //test(.6);
-        for(double d=.4;d<=1.0;d+=.1){
+        for(double d=5;d<=8;d+=.5){
             test(d);
         }
         for(double[] row:values){
@@ -27,13 +27,13 @@ public class Characterize extends CommandBase{
             System.out.println();
         }
     }
-    private void test(double percent){
-        this.percent=percent;
-        drive.arcadeDrive(percent, 0);
+    private void test(double volatage){
+        this.volatage=volatage;
+        drive.drive(volatage);
         delay(100);
         evaluate();
-        this.percent=0;
-        drive.arcadeDrive(0, 0);
+        this.volatage=0;
+        drive.drive(0);
         delay(500);
     }
     private void evaluate(){
@@ -42,12 +42,12 @@ public class Characterize extends CommandBase{
         double v2=drive.getAveVel();
         delay(500);
         double v3=drive.getAveVel();
-        values.add(new double[]{percent,v3,10*(v2-v1)});
+        values.add(new double[]{volatage,v3,10*(v2-v1)});
     }
     private void delay(long time){
         long start=System.currentTimeMillis();
         while(start+time>System.currentTimeMillis()){
-            drive.arcadeDrive(percent,0);
+            drive.drive(volatage);
         }
     }
     public boolean isFinished(){
