@@ -88,7 +88,7 @@ public class RobotContainer {
    Supplier<DifferentialDriveWheelSpeeds> wheelSpeeds=() -> drive.getWheelSpeeds();
     BiConsumer<Double,Double> bc=(left, right) -> drive.tankDriveVolts(left,right);
     RamseteController rc=new RamseteController(kRamseteB, kRamseteZeta);
-    rc.setEnabled(false);
+    //rc.setEnabled(false);
     RamseteCommand ramseteCommand = new RamseteCommand(
         trajectory,
         drive::getPose,
