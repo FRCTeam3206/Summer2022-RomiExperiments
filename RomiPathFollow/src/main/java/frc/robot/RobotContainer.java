@@ -4,6 +4,11 @@
 
 package frc.robot;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -15,11 +20,14 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.Filesystem;
 // import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.ArcadeDrive;
 import frc.robot.subsystems.Drivetrain;
 
@@ -42,10 +50,21 @@ public class RobotContainer {
   // Assumes a gamepad plugged into channnel 0
   private final Joystick m_controller = new Joystick(0);
 
+  SendableChooser<Path> m_chooser = new SendableChooser<>();
+
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    Path paths_loc = Paths.get(Filesystem.getDeployDirectory().toString(), "paths");
+    File[] paths = paths_loc.toFile().listFiles();
+
+    for (File path : paths) {
+      m_chooser.addOption(path.getName(), path.toPath());
+    }
+
+    SmartDashboard.putData(m_chooser);
     // Configure the button bindings
     configureButtonBindings();
   }
@@ -70,7 +89,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand(Trajectory trajectory) {
+  public Command getAutonomousCommand() {
     var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
         new SimpleMotorFeedforward(Constants.DriveConstants.ksVolts,
             Constants.DriveConstants.kvVoltSecondsPerMeter,
@@ -82,16 +101,23 @@ public class RobotContainer {
         .setKinematics(Constants.DriveConstants.kDriveKinematics)
         .addConstraint(autoVoltageConstraint);
 
-    // Trajectory traj =
-    //   TrajectoryGenerator.generateTrajectory(
-    //     new Pose2d(0, 0, new Rotation2d(0)),
-    //     List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-    //     new Pose2d(3, 0, new Rotation2d(0)), 
-    //     config);
+    // Sample trajectory, in case loading the pathweaver json fails
+    Trajectory traj =
+      TrajectoryGenerator.generateTrajectory(
+        new Pose2d(0, 0, new Rotation2d(0)),
+        List.of(),
+        new Pose2d(0.5, 0, new Rotation2d(0)), 
+        config);
+
+    try {
+      traj = TrajectoryUtil.fromPathweaverJson(m_chooser.getSelected());
+   } catch (IOException ex) {
+      System.out.println("unable to open trajectory");
+   }
 
     RamseteCommand ramseteCommand = 
       new RamseteCommand(
-        trajectory,
+        traj,
         m_drivetrain::getPose, 
         new RamseteController(Constants.DriveConstants.kRamseteB, Constants.DriveConstants.kRamseteZeta), 
         new SimpleMotorFeedforward(Constants.DriveConstants.ksVolts,
@@ -104,7 +130,7 @@ public class RobotContainer {
         m_drivetrain::tankDriveVolts,
         m_drivetrain);
 
-    m_drivetrain.resetOdometry(trajectory.getInitialPose());
+    m_drivetrain.resetOdometry(traj.getInitialPose());
     return ramseteCommand.andThen(() -> m_drivetrain.tankDriveVolts(0, 0));
   }
 
