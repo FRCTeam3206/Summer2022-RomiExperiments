@@ -70,7 +70,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+  public Command getAutonomousCommand(Trajectory trajectory) {
     var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
         new SimpleMotorFeedforward(Constants.DriveConstants.ksVolts,
             Constants.DriveConstants.kvVoltSecondsPerMeter,
@@ -82,16 +82,16 @@ public class RobotContainer {
         .setKinematics(Constants.DriveConstants.kDriveKinematics)
         .addConstraint(autoVoltageConstraint);
 
-    Trajectory traj =
-      TrajectoryGenerator.generateTrajectory(
-        new Pose2d(0, 0, new Rotation2d(0)),
-        List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-        new Pose2d(3, 0, new Rotation2d(0)), 
-        config);
+    // Trajectory traj =
+    //   TrajectoryGenerator.generateTrajectory(
+    //     new Pose2d(0, 0, new Rotation2d(0)),
+    //     List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+    //     new Pose2d(3, 0, new Rotation2d(0)), 
+    //     config);
 
     RamseteCommand ramseteCommand = 
       new RamseteCommand(
-        traj,
+        trajectory,
         m_drivetrain::getPose, 
         new RamseteController(Constants.DriveConstants.kRamseteB, Constants.DriveConstants.kRamseteZeta), 
         new SimpleMotorFeedforward(Constants.DriveConstants.ksVolts,
@@ -104,7 +104,7 @@ public class RobotContainer {
         m_drivetrain::tankDriveVolts,
         m_drivetrain);
 
-    m_drivetrain.resetOdometry(traj.getInitialPose());
+    m_drivetrain.resetOdometry(trajectory.getInitialPose());
     return ramseteCommand.andThen(() -> m_drivetrain.tankDriveVolts(0, 0));
   }
 
