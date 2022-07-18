@@ -76,7 +76,7 @@ public class RobotContainer {
     return getPathWeaverCommand();
   }
   public Command getPathWeaverCommand(){
-    String trajectoryJSON = "paths/simplepark.wpilib.json";
+    String trajectoryJSON = "paths/parklast.wpilib.json";
     Trajectory trajectory = new Trajectory();
     try {
       Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(trajectoryJSON);
