@@ -155,7 +155,7 @@ public class RomiDrivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     // Update the odometry in the periodic block
-    odometry.update(gyro.getHeading(), leftEncoder.getDistance(), rightEncoder.getDistance());
+    odometry.update(gyro.getHeading(), -leftEncoder.getDistance(), -rightEncoder.getDistance());
     SmartDashboard.putNumber("X",getPose().getX());
     SmartDashboard.putNumber("Y",getPose().getY());
     SmartDashboard.putNumber("T",getPose().getRotation().getDegrees());
