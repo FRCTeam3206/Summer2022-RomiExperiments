@@ -29,13 +29,21 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-
+import edu.wpi.first.wpilibj.Filesystem;
 import java.util.function.BiConsumer;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.function.Supplier;
+
+import org.opencv.ml.StatModel;
+
 import static frc.robot.Constants.DriveConstants.*;
 import static frc.robot.Constants.AutoConstants.*;
 /**
@@ -73,7 +81,51 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return getPathWeaverCommand();
+    return getRamseteCommand();
+  }
+  public Trajectory getTrajectoryFromPathFile(String path) throws FileNotFoundException{
+    Scanner scan=new Scanner(new FileInputStream(Filesystem.getDeployDirectory().getAbsolutePath()+"/"+path));
+    scan.nextLine();//Skip headers
+    ArrayList<Translation2d> trans=new ArrayList<Translation2d>();
+    String line;
+    Scanner lscan=null;
+    boolean first=true;
+    double startAngle=0,endAngle=0;
+    while(scan.hasNextLine()){
+      line=scan.nextLine();
+      lscan=new Scanner(line).useDelimiter(",");
+      double x=lscan.nextDouble();
+      double y=2.2+lscan.nextDouble();
+      if(first){
+        double tx=lscan.nextDouble();
+        double ty=lscan.nextDouble();
+        startAngle=Math.atan(ty/tx);
+        first=false;
+      }
+      trans.add(new Translation2d(x,y));
+    }
+    double tx=lscan.nextDouble();
+    double ty=lscan.nextDouble();
+    endAngle=Math.atan(ty/tx);
+    Pose2d start=new Pose2d(trans.get(0),new Rotation2d(startAngle));
+    Pose2d end=new Pose2d(trans.get(trans.size()-1),new Rotation2d(endAngle));
+    trans.remove(0);
+    trans.remove(trans.size()-1);
+    
+    var autoVoltageConstraint =
+        new DifferentialDriveVoltageConstraint(
+            new SimpleMotorFeedforward(ksVolts, 
+                                       kvVoltSecondsPerMeter, 
+                                       kaVoltSecondsSquaredPerMeter),
+            kDriveKinematics,
+            6);
+
+    TrajectoryConfig config =
+        new TrajectoryConfig(kMaxSpeedMetersPerSecond, 
+                             kMaxAccelerationMetersPerSecondSquared)
+            .setKinematics(kDriveKinematics)
+            .addConstraint(autoVoltageConstraint);
+    return TrajectoryGenerator.generateTrajectory(start, trans, end, config);
   }
   public Command getPathWeaverCommand(){
     String trajectoryJSON = "paths/parklast.wpilib.json";
@@ -131,6 +183,13 @@ public class RobotContainer {
         trans,
         new Pose2d(),
         config);
+    try {
+      exampleTrajectory=getTrajectoryFromPathFile("paths/simplepark.path");
+    } catch (FileNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    drive.resetOdometry(exampleTrajectory.getInitialPose());
     double expectedTime=exampleTrajectory.getTotalTimeSeconds();
     SmartDashboard.putNumber("ExpectedTime",expectedTime);
     Supplier<DifferentialDriveWheelSpeeds> wheelSpeeds=() -> drive.getWheelSpeeds();
