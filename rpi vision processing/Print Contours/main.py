@@ -9,7 +9,7 @@ import numpy as np
 from networktables import NetworkTablesInstance
 
 ntinst = NetworkTablesInstance.getDefault()
-
+ntinst.startDSClient()
 lowh = 0
 lows = 0
 lowv = 0
@@ -26,6 +26,7 @@ def main():
     h = 360
 
     cs = CameraServer.getInstance()
+    cs.startAutomaticCapture()
     cs.enableLogging()
 
     # Capture from the first USB Camera on the system
