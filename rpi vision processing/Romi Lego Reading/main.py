@@ -11,48 +11,6 @@ import sys
 
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 from networktables import NetworkTablesInstance
-
-#   JSON format:
-#   {
-#       "team": <team number>,
-#       "ntmode": <"client" or "server", "client" if unspecified>
-#       "cameras": [
-#           {
-#               "name": <camera name>
-#               "path": <path, e.g. "/dev/video0">
-#               "pixel format": <"MJPEG", "YUYV", etc>   // optional
-#               "width": <video mode width>              // optional
-#               "height": <video mode height>            // optional
-#               "fps": <video mode fps>                  // optional
-#               "brightness": <percentage brightness>    // optional
-#               "white balance": <"auto", "hold", value> // optional
-#               "exposure": <"auto", "hold", value>      // optional
-#               "properties": [                          // optional
-#                   {
-#                       "name": <property name>
-#                       "value": <property value>
-#                   }
-#               ],
-#               "stream": {                              // optional
-#                   "properties": [
-#                       {
-#                           "name": <stream property name>
-#                           "value": <stream property value>
-#                       }
-#                   ]
-#               }
-#           }
-#       ]
-#       "switched cameras": [
-#           {
-#               "name": <virtual camera name>
-#               "key": <network table key used for selection>
-#               // if NT value is a string, it's treated as a name
-#               // if NT value is a double, it's treated as an integer index
-#           }
-#       ]
-#   }
-
 configFile = "/boot/frc.json"
 
 class CameraConfig: pass
@@ -234,61 +192,50 @@ if __name__ == "__main__":
     import numpy as np
     import cv2
     locator_table = ntinst.getTable("BallLocator")
-    locator_table.putNumber("lowh",0)
-    locator_table.putNumber("lows",0)
-    locator_table.putNumber("lowv",0)
-    locator_table.putNumber("highh",0)
-    locator_table.putNumber("highs",0)
-    locator_table.putNumber("highv",0)
-    locator_table.putNumber("minsize",0)
-    lowh = locator_table.getEntry("lowh")
-    lows = locator_table.getEntry("lows")
-    lowv = locator_table.getEntry("lowv")
-
-    highh = locator_table.getEntry("highh")
-    highs = locator_table.getEntry("highs")
-    highv = locator_table.getEntry("highv")
-
-    minsize=locator_table.getEntry("minsize")
+    green_profile=[(61,139,62),(90,255,144)]
+    blue_profile=[(105,135,140),(165,255,255)]
+    yellow_profile=[(7,119,163),(26,255,255)]
+    profiles=[green_profile,blue_profile,yellow_profile]
     w=160
     h=120
     image = np.zeros(shape=(w, h, 3), dtype=np.uint8)
     cs = CameraServer.getInstance()
     outputStream = cs.putVideo("Name", w,h)
-    thresholdStream = cs.putVideo("Thresholded image", w,h)
+    contourStreams=list()
+    for i,profile in enumerate(profiles):
+        contourStreams.append(cs.putVideo("Profile "+str(i), w,h))
+    thresholdStreams=list()
+    for i,profile in enumerate(profiles):
+        thresholdStreams.append(cs.putVideo("Threshold "+str(i), w,h))
     cvSink = cs.getVideo()
     time.sleep(1)
     print(dir(ntinst))
     print(dir(locator_table))
-    locator_table.putNumberArray("here",[0,1,2,3,4,5,6,7,8,9])
     while True:
         #print("Running")
         # Tell the CvSink to grab a frame from the camera and put it
         # in the source image.  If there is an error notify the output.
         time, image = cvSink.grabFrame(image)
         img_hsv=cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
-        img_threshold = cv2.inRange(img_hsv, 
-            (lowh.getNumber(0), lows.getNumber(0), lowv.getNumber(0)), 
-            (highh.getNumber(0), highs.getNumber(0), highv.getNumber(0))
-        )
-        #puts boxes around the contours in img_threshold
-        #written by github copiolot :)
-        img_contours = img_threshold.copy()
-        contours, hierarchy = cv2.findContours(img_contours, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        for cnt in contours:
-            x,y,w,h = cv2.boundingRect(cnt)
-            if cv2.contourArea(cnt)/image.shape[0]/image.shape[1] > minsize.getNumber(0):
-                cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
-        # Send the image to the output
-        outputStream.putFrame(image)
-        thresholdStream.putFrame(img_threshold)
-        #print("Sent")
-        #time.sleep(0.01)
-        #blue
-        #img_threshold = cv2.inRange(img_hsv, (161, 56, 203), (172, 156, 255))
-        #_, contours, _ = cv2.findContours(img_threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        #contours = sorted(contours, key=cv2.contourArea, reverse=True)
-        #for contour in contours[:5]:
-        #    drawRectangle(image, cv2.boundingRect(contour),(255,255,255))
-        thresholdStream.putFrame(img_threshold)
+        commands=list()
+        for i,profile in enumerate(profiles):
+            img_threshold = cv2.inRange(img_hsv, 
+                profile[0], 
+                profile[1]
+            )
+            #puts boxes around the contours in img_threshold
+            img_contours = img_threshold.copy()
+            image_profile=image.copy()
+            contours, hierarchy = cv2.findContours(img_contours, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            for cnt in contours:
+                x,y,w,h = cv2.boundingRect(cnt)
+                if cv2.contourArea(cnt)/image.shape[0]/image.shape[1] > .003:
+                    commands.append((i,y))
+                    cv2.rectangle(image_profile,(x,y),(x+w,y+h),(255,255,255),2)
+            contourStreams[i].putFrame(image_profile)
+            thresholdStreams[i].putFrame(img_threshold)
+        commands_sorted=sorted(commands,key=lambda x:x[1])
+        #put the first element of each tuple into a new list
+        commands_sorted=list(map(lambda x:x[0],commands_sorted))
+        locator_table.putNumberArray("Commands",commands_sorted)
         outputStream.putFrame(image)
