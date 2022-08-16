@@ -4,12 +4,16 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
-import frc.robot.commands.AutonomousDistance;
-import frc.robot.commands.AutonomousTime;
+import frc.robot.commands.DriveStraight;
+import frc.robot.commands.TurnAngle;
+import frc.robot.sensors.RomiGyro;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.OnBoardIO;
 import frc.robot.subsystems.OnBoardIO.ChannelMode;
@@ -17,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Button;
 
 /**
@@ -29,9 +34,9 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Drivetrain m_drivetrain = new Drivetrain();
   private final OnBoardIO m_onboardIO = new OnBoardIO(ChannelMode.INPUT, ChannelMode.INPUT);
-
+  RomiGyro gyro = new RomiGyro();
   // Assumes a gamepad plugged into channnel 0
-  private final Joystick m_controller = new Joystick(0);
+  private final GenericHID m_controller = new XboxController(0);
 
   // Create SmartDashboard chooser for autonomous routines
   private final SendableChooser<Command> m_chooser = new SendableChooser<>();
@@ -69,11 +74,9 @@ public class RobotContainer {
     onboardButtonA
         .whenActive(new PrintCommand("Button A Pressed"))
         .whenInactive(new PrintCommand("Button A Released"));
+    Button buttonA= new Button(()->m_controller.getRawButton(1));
+    buttonA.whenActive(new TurnAngle(-90,m_drivetrain));
 
-    // Setup SmartDashboard options
-    m_chooser.setDefaultOption("Auto Routine Distance", new AutonomousDistance(m_drivetrain));
-    m_chooser.addOption("Auto Routine Time", new AutonomousTime(m_drivetrain));
-    SmartDashboard.putData(m_chooser);
   }
 
   /**
@@ -82,7 +85,15 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return m_chooser.getSelected();
+    NetworkTableInstance nti=NetworkTableInstance.getDefault();
+    Double[] commandsD=(Double[])nti.getTable("BallLocator").getEntry("Commands").getNumberArray(new Number[]{0});
+    Integer[] commands=new Integer[commandsD.length];
+    int i=0;
+    for(Double d:commandsD){
+      commands[i]=d.intValue();
+      i++;
+    }
+    return getDriveFromLegos(commands);
   }
 
   /**
@@ -93,5 +104,24 @@ public class RobotContainer {
   public Command getArcadeDriveCommand() {
     return new ArcadeDrive(
         m_drivetrain, () -> -m_controller.getRawAxis(1), () -> m_controller.getRawAxis(0));
+  }
+  public Command getDriveFromLegos(Integer[] inputs){
+    Command[] commands=new Command[inputs.length];
+    int i=0;
+    for(int input:inputs){
+      switch(input){
+        case 0:
+          commands[i]=new DriveStraight(24, m_drivetrain);
+        break;
+        case 1:
+          commands[i]=new TurnAngle(90,m_drivetrain);
+        break;
+        case 2:
+          commands[i]=new TurnAngle(-90,m_drivetrain);
+        break;
+      }
+      i++;
+    }
+    return new SequentialCommandGroup(commands);
   }
 }

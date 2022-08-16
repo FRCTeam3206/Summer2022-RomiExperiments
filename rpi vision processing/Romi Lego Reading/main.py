@@ -192,9 +192,9 @@ if __name__ == "__main__":
     import numpy as np
     import cv2
     locator_table = ntinst.getTable("BallLocator")
-    green_profile=[(61,139,62),(90,255,144)]
-    blue_profile=[(105,135,140),(165,255,255)]
-    yellow_profile=[(7,119,163),(26,255,255)]
+    green_profile=[(66,170,170),(90,255,255)]
+    blue_profile=[(86,220,220),(108,255,255)]
+    yellow_profile=[(0,220,220),(30,255,255)]
     profiles=[green_profile,blue_profile,yellow_profile]
     w=160
     h=120
